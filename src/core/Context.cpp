@@ -31,12 +31,12 @@
 #include "WorkItem.h"
 
 #include "plugins/InstructionCounter.h"
-#include "plugins/WorkloadCharacterisation.h"
 #include "plugins/InteractiveDebugger.h"
 #include "plugins/Logger.h"
 #include "plugins/MemCheck.h"
 #include "plugins/RaceDetector.h"
 #include "plugins/Uninitialized.h"
+#include "plugins/WorkloadCharacterisation.h"
 
 using namespace oclgrind;
 using namespace std;
@@ -357,12 +357,12 @@ void Context::notifyWorkItemComplete(const WorkItem* workItem) const
   NOTIFY(workItemComplete, workItem);
 }
 
-void Context::notifyWorkItemBarrier(const WorkItem *workItem) const
+void Context::notifyWorkItemBarrier(const WorkItem* workItem) const
 {
   NOTIFY(workItemBarrier, workItem);
 }
 
-void Context::notifyWorkItemClearBarrier(const WorkItem *workItem) const
+void Context::notifyWorkItemClearBarrier(const WorkItem* workItem) const
 {
   NOTIFY(workItemClearBarrier, workItem);
 }

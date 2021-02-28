@@ -644,7 +644,7 @@ void WorkloadCharacterisation::kernelEnd(const KernelInvocation *kernelInvocatio
   //      << (float)((double)load_count / (double)m_loadOps.size()) << endl;
   // cout << "                          re-writes:                            " << setprecision(4)
   //      << (float)((double)store_count / (double)m_storeOps.size()) << endl << endl;
-  // size_t significant_memory_access_count = (size_t)ceil(memory_access_count * 0.9);
+  size_t significant_memory_access_count = (size_t)ceil(memory_access_count * 0.9);
   // cout << "90\% of memory accesses: " << significant_memory_access_count << endl
   //      << endl;
 
@@ -699,7 +699,7 @@ void WorkloadCharacterisation::kernelEnd(const KernelInvocation *kernelInvocatio
     }
     loc_entropy.push_back((float)local_entropy);
     // cout << "|" << setw(12) << right << nskip << "|" << fixed << setw(8) << setprecision(4) << right << (float)local_entropy << "|" << endl;
-    logfile << nskip << " " << local_entropy << ";"
+    logfile << nskip << " " << local_entropy << ";";
   }
   logfile << std::endl;
 
@@ -727,7 +727,7 @@ void WorkloadCharacterisation::kernelEnd(const KernelInvocation *kernelInvocatio
     avg_psl.push_back(avg_psl_i);
     avg_psl_sum += avg_psl_i;
     // cout << "|" << setw(12) << right << i << "|" << fixed << setw(25) << setprecision(4) << right << (float)avg_psl_i << "|" << endl;
-    logfile << i << " " << avg_psl_i << ";"
+    logfile << i << " " << avg_psl_i << ";";
   }
   logfile << std::endl;
 
@@ -777,7 +777,7 @@ void WorkloadCharacterisation::kernelEnd(const KernelInvocation *kernelInvocatio
   //      << "|" << endl;
   // cout << "|--------------|----------------------:|" << endl;
 
-  logile << "branch_at_line_count, ";
+  logfile << "branch_at_line_count, ";
 
   size_t branch_op_count = 0;
   for (auto const &x : sorted_branch_ops) {

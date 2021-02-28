@@ -377,11 +377,6 @@ vector<double> parallelSpatialLocality(vector < vector < WorkloadCharacterisatio
 }
 
 void WorkloadCharacterisation::kernelEnd(const KernelInvocation *kernelInvocation) {
-  // Load default locale
-  locale previousLocale = cout.getloc();
-  locale defaultLocale("");
-  cout.imbue(defaultLocale);
-
   std::string logfile_name;
 
   const char *result_path = getenv("OCLGRIND_WORKLOAD_CHARACTERISATION_OUTPUT_PATH");
@@ -399,25 +394,10 @@ void WorkloadCharacterisation::kernelEnd(const KernelInvocation *kernelInvocatio
   logfile.open(logfile_name);
   assert(logfile);
 
-  // cout << endl
-  //      << "# Architecture-Independent Workload Characterization of kernel: " << kernelInvocation->getKernel()->getName() << endl;
-
-  // cout << endl
-  //      << "## Compute" << endl
-  //      << endl;
-
   std::vector<std::pair<std::string, size_t>> sorted_ops(m_computeOps.size());
   std::partial_sort_copy(m_computeOps.begin(), m_computeOps.end(), sorted_ops.begin(), sorted_ops.end(), [](const std::pair<std::string, size_t> &left, const std::pair<std::string, size_t> &right) {
     return (left.second > right.second);
   });
-
-  // cout << "|" << setw(20) << left << "Opcode"
-  //      << "|" << setw(12) << right << "count"
-  //      << "|" << endl;
-  // cout << "|--------------------|-----------:|" << endl;
-  // for (auto const &item : sorted_ops)
-  //   cout << "|" << setw(20) << left << item.first << "|" << setw(12) << right << item.second << "|" << endl;
-  // cout << endl;
 
   logfile << "opcode_count, ";
   for (auto const &item : sorted_ops) {
@@ -430,37 +410,8 @@ void WorkloadCharacterisation::kernelEnd(const KernelInvocation *kernelInvocatio
     operation_count += item.second;
   }
 
-  // size_t significant_operation_count = (size_t) ceil(operation_count * 0.9);
-  // size_t major_operations = 0;
-  // size_t total_instruction_count = operation_count;
-  // operation_count = 0;
-
-  // cout << "unique opcodes required to cover 90\% of dynamic instructions: ";
-  // while (operation_count < significant_operation_count) {
-  //   if (major_operations > 0)
-  //     cout << ", ";
-  //   operation_count += sorted_ops[major_operations].second;
-  //   cout << sorted_ops[major_operations].first;
-  //   major_operations++;
-  // }
-  // cout << endl
-  //      << endl;
-
-  // cout << "num unique opcodes required to cover 90\% of dynamic instructions: " << major_operations << endl
-  //      << endl;
-  // cout << "Total Instruction Count: " << total_instruction_count << endl;
-
-  // cout << endl
-  //      << "## Parallelism" << endl;
-
-  // cout << endl
-  //      << "### Utilization" << endl
-  //      << endl;
-
   double freedom_to_reorder = std::accumulate(m_instructionsBetweenLoadOrStore.begin(), m_instructionsBetweenLoadOrStore.end(), 0.0);
   freedom_to_reorder = freedom_to_reorder / m_instructionsBetweenLoadOrStore.size();
-  // cout << "Freedom to Reorder: " << setprecision(2) << freedom_to_reorder << endl
-  //      << endl;
 
   logfile << "freedom_to_reorder, " << freedom_to_reorder << std::endl;
 
@@ -474,29 +425,13 @@ void WorkloadCharacterisation::kernelEnd(const KernelInvocation *kernelInvocatio
   }
 
   resource_pressure = resource_pressure / m_threads_invoked;
-  // cout << "Resource Pressure: " << setprecision(2) << resource_pressure << endl;
-
   logfile << "resource_pressure, " << resource_pressure << std::endl;
-
-  // cout << endl
-  //      << "### Thread-Level Parallelism" << endl
-  //      << endl;
-
-  // cout << "Work-items: " << m_threads_invoked << endl
-  //      << endl;
-
   logfile << "work_items, " << m_threads_invoked << std::endl;
 
   double granularity = 1.0 / static_cast<double>(m_threads_invoked);
-  // cout << "Granularity: " << granularity << endl
-  //      << endl;
-
-  // cout << "Total Barriers Hit: " << m_barriers_hit << endl
-  //      << endl;
 
   logfile << "total_barriers_hit, " << m_barriers_hit << std::endl;
 
-  //cout << "num barriers hit per thread: " << m_instructionsToBarrier.size()/m_threads_invoked << endl;
   uint32_t itb_min = *std::min_element(m_instructionsToBarrier.begin(), m_instructionsToBarrier.end());
   uint32_t itb_max = *std::max_element(m_instructionsToBarrier.begin(), m_instructionsToBarrier.end());
 
@@ -511,19 +446,9 @@ void WorkloadCharacterisation::kernelEnd(const KernelInvocation *kernelInvocatio
     itb_median = itb[size / 2];
   }
 
-  // cout << "Instructions to Barrier (min/max/median): " << itb_min << "/" << itb_max << "/" << itb_median << endl
-  //      << endl;
-
   logfile << "instructions_to_barrier_min, " << itb_min << std::endl;
   logfile << "instructions_to_barrier_max, " << itb_max << std::endl;
   logfile << "instructions_to_barrier_median, " << itb_median << std::endl;
-
-  // double barriers_per_instruction = static_cast<double>(m_barriers_hit + m_threads_invoked) / static_cast<double>(total_instruction_count);
-  // cout << "Barriers per Instruction: " << barriers_per_instruction << endl
-  //      << endl;
-
-  // cout << "### Work Distribution" << endl
-  //      << endl;
 
   uint32_t ipt_min = *std::min_element(m_instructionsPerWorkitem.begin(), m_instructionsPerWorkitem.end());
   uint32_t ipt_max = *std::max_element(m_instructionsPerWorkitem.begin(), m_instructionsPerWorkitem.end());
@@ -538,15 +463,10 @@ void WorkloadCharacterisation::kernelEnd(const KernelInvocation *kernelInvocatio
   } else {
     ipt_median = ipt[size / 2];
   }
-  // cout << "Instructions per Thread (min/max/median): " << ipt_min << "/" << ipt_max << "/" << ipt_median << endl
-  //      << endl;
 
   logfile << "instructions_per_thread_min, " << ipt_min << std::endl;
   logfile << "instructions_per_thread_max, " << ipt_max << std::endl;
   logfile << "instructions_per_thread_median, " << ipt_median << std::endl;
-
-  // cout << "### Data Parallelism" << endl
-  //      << endl;
 
   using pair_type = decltype(m_instructionWidth)::value_type;
 
@@ -564,8 +484,6 @@ void WorkloadCharacterisation::kernelEnd(const KernelInvocation *kernelInvocatio
   std::transform(m_instructionWidth.begin(), m_instructionWidth.end(), diff.begin(), [simd_mean](const pair_type &x) { return (x.first - simd_mean) * (x.first - simd_mean) * x.second; });
   double simd_sq_sum = std::accumulate(diff.begin(), diff.end(), 0.0);
   double simd_stdev = std::sqrt(simd_sq_sum / (double)simd_num);
-  // cout << "SIMD Width (min/max/mean/stdev): " << simd_min << "/" << simd_max << "/" << simd_mean << "/" << simd_stdev << endl
-  //      << endl;
 
   logfile << "simd_sum, " << simd_sum << std::endl;
   logfile << "simd_num, " << simd_num << std::endl;
@@ -574,25 +492,8 @@ void WorkloadCharacterisation::kernelEnd(const KernelInvocation *kernelInvocatio
   logfile << "simd_width_mean, " << simd_mean << std::endl;
   logfile << "simd_width_stdev, " << simd_stdev << std::endl;
 
-  // double instructions_per_operand = static_cast<double>(total_instruction_count) / simd_sum;
-  // cout << "Instructions per Operand: " << instructions_per_operand << endl
-  //      << endl;
-
-  // cout << "## Memory" << endl
-  //      << endl;
-
-  // cout << "### Memory Footprint" << endl
-  //      << endl;
-
-  // count accesses to memory addresses with different numbers of retained
-  // significant bits
   std::vector<std::unordered_map<size_t, uint32_t>> local_address_count(11);
-  // for (const auto &m : m_memoryOps) {
-  //   for (int nskip = 0; nskip <= 10; nskip++) {
-  //     size_t local_addr = m.first >> nskip;
-  //     local_address_count[nskip][local_addr] += m.second;
-  //   }
-  // }
+
   size_t load_count = 0;
   size_t store_count = 0;
 
@@ -620,11 +521,7 @@ void WorkloadCharacterisation::kernelEnd(const KernelInvocation *kernelInvocatio
   size_t memory_access_count = 0;
   for (auto const &e : sorted_count) {
     memory_access_count += e.second;
-    //cout << "address: "<< e.first << " accessed: " << e.second << " times!" << endl;
   }
-
-  // cout << "num memory accesses: " << memory_access_count << endl
-  //      << endl;
 
   logfile << "memory_access_count, " << memory_access_count << std::endl;
   logfile << "unique_memory_addresses_accessed, " << local_address_count[0].size() << std::endl;
@@ -633,21 +530,7 @@ void WorkloadCharacterisation::kernelEnd(const KernelInvocation *kernelInvocatio
   logfile << "total_memory_reads, " << load_count << std::endl;
   logfile << "total_memory_writes, " << store_count << std::endl;
 
-  // cout << "Total Memory Footprint -- num unique memory addresses accessed: " << local_address_count[0].size() << endl;
-  // cout << "                          num unique memory addresses read:     " << m_storeOps.size() << endl; // Surely loadOps?
-  // cout << "                          num unique memory addresses written:  " << m_loadOps.size()  << endl;
-  // cout << "                          unique read/write ratio:              "
-  //      << setprecision(4) << (float) (((double)m_loadOps.size()) / ((double)m_storeOps.size()))  << endl;
-  // cout << "                          total reads:                          " << load_count    << endl;
-  // cout << "                          total writes:                         " << store_count    << endl;
-  // cout << "                          re-reads:                             " << setprecision(4)
-  //      << (float)((double)load_count / (double)m_loadOps.size()) << endl;
-  // cout << "                          re-writes:                            " << setprecision(4)
-  //      << (float)((double)store_count / (double)m_storeOps.size()) << endl << endl;
   size_t significant_memory_access_count = (size_t)ceil(memory_access_count * 0.9);
-  // cout << "90\% of memory accesses: " << significant_memory_access_count << endl
-  //      << endl;
-
   size_t unique_memory_addresses = 0;
   size_t access_count = 0;
   while (access_count < significant_memory_access_count) {
@@ -655,18 +538,7 @@ void WorkloadCharacterisation::kernelEnd(const KernelInvocation *kernelInvocatio
     unique_memory_addresses++;
   }
 
-  // cout << "90% Memory Footprint -- num unique memory addresses that cover 90\% of memory accesses: " << unique_memory_addresses << endl
-  //      << endl;
-
   logfile << "sig_unique_memory_addresses, " << unique_memory_addresses << std::endl;
-
-  //cout << "the top 10:" << endl;
-  //for (int i = 0; i < 10; i++){
-  //    cout << "address: " << sorted_count[i].first << " contributed: " << sorted_count[i].second << " accesses!" << endl;
-  //}
-
-  // cout << "### Memory Entropy" << endl
-  //      << endl;
 
   double mem_entropy = 0.0;
   for (const auto &it : sorted_count) {
@@ -675,19 +547,7 @@ void WorkloadCharacterisation::kernelEnd(const KernelInvocation *kernelInvocatio
     mem_entropy = mem_entropy - prob * std::log2(prob);
   }
 
-  // cout << "Global Memory Address Entropy -- measure of the randomness of memory addresses: " << (float)mem_entropy << endl
-  //      << endl;
-
   logfile << "global_memory_address_entropy, " << mem_entropy << std::endl;
-
-  // cout << "Local Memory Address Entropy -- measure of the spatial locality of memory addresses" << endl
-  //      << endl;
-
-  // cout << "|" << setw(12) << right << "LSBs skipped"
-  //      << "|" << setw(8) << right << "Entropy"
-  //      << "|" << endl;
-  // cout << "|-----------:|-------:|" << endl;
-
   logfile << "lsb_skipped_entropy, ";
 
   std::vector<float> loc_entropy;
@@ -698,20 +558,9 @@ void WorkloadCharacterisation::kernelEnd(const KernelInvocation *kernelInvocatio
       local_entropy = local_entropy - prob * std::log2(prob);
     }
     loc_entropy.push_back((float)local_entropy);
-    // cout << "|" << setw(12) << right << nskip << "|" << fixed << setw(8) << setprecision(4) << right << (float)local_entropy << "|" << endl;
     logfile << nskip << " " << local_entropy << ";";
   }
   logfile << std::endl;
-
-  // cout << endl
-  //      << "### Parallel Spatial Locality" << endl
-  //      << endl;
-
-
-  // cout << "|" << setw(12) << right << "LSBs skipped"
-  //      << "|" << setw(25) << right << "Normed Parallel Spatial Locality"
-  //      << "|" << endl;
-  // cout << "|-----------:|------------------------:|" << endl;
 
   logfile << "lsb_skipped_npsl, ";
 
@@ -726,66 +575,28 @@ void WorkloadCharacterisation::kernelEnd(const KernelInvocation *kernelInvocatio
     avg_psl_i = (avg_psl_i / double(m_psl_per_group.size())) / std::log2(double(items_per_group + 1));
     avg_psl.push_back(avg_psl_i);
     avg_psl_sum += avg_psl_i;
-    // cout << "|" << setw(12) << right << i << "|" << fixed << setw(25) << setprecision(4) << right << (float)avg_psl_i << "|" << endl;
     logfile << i << " " << avg_psl_i << ";";
   }
   logfile << std::endl;
 
-  // cout << endl
-  //      << "Normed Locality Sum: " << avg_psl_sum
-  //      << endl;
-
-  // cout << endl
-  //      << "### Memory Diversity -- Usage of local and constant memory relative to global memory" << endl
-  //      << endl;
-
-  // cout << "num global memory accesses: " << m_global_memory_access << endl
-  //      << endl;
-
   logfile << "num_global_memory_access, " << m_global_memory_access << std::endl;
-
-  // cout << "num local memory accesses: " << m_local_memory_access << endl
-  //      << endl;
-
   logfile << "num_local_memory_access, " << m_local_memory_access << std::endl;
-
-  // cout << "num constant memory accesses: " << m_constant_memory_access << endl
-  //      << endl;
-
   logfile << "num_constant_memory_access, " << m_constant_memory_access << std::endl;
 
   uint32_t m_total_memory_access = m_global_memory_access + m_local_memory_access + m_constant_memory_access;
-
-  // cout << "\% local memory accesses (local/total): " << setprecision(2) << (((float)m_local_memory_access / (float)m_total_memory_access) * 100) << endl
-  //      << endl;
-  // cout << "\% constant memory accesses (constant/total): " << setprecision(2) << (((float)m_constant_memory_access / (float)m_total_memory_access) * 100) << endl
-  //      << endl;
-
-  // cout << "## Control" << endl
-  //      << endl;
-
-  // cout << "Unique Branch Instructions -- Total number of unique branch instructions to cover 90\% of the branches" << endl
-  //      << endl;
 
   std::vector<std::pair<size_t, uint32_t>> sorted_branch_ops(m_branchCounts.size());
   std::partial_sort_copy(m_branchCounts.begin(), m_branchCounts.end(), sorted_branch_ops.begin(), sorted_branch_ops.end(), [](const std::pair<size_t, uint32_t> &left, const std::pair<size_t, uint32_t> &right) {
     return (left.second > right.second);
   });
 
-  // cout << "|" << setw(14) << left << "Branch At Line"
-  //      << "|" << setw(23) << right << "Count (hit and miss)"
-  //      << "|" << endl;
-  // cout << "|--------------|----------------------:|" << endl;
-
   logfile << "branch_at_line_count, ";
 
   size_t branch_op_count = 0;
   for (auto const &x : sorted_branch_ops) {
     branch_op_count += x.second;
-    // cout << "|" << setw(14) << left << x.first << "|" << setw(23) << right << x.second << "|" << endl;
     logfile << x.first << " " << x.second << ";";
   }
-  // cout << endl;
   logfile << std::endl;
 
   size_t significant_branch_op_count = (size_t)ceil(branch_op_count * 0.9);
@@ -796,11 +607,6 @@ void WorkloadCharacterisation::kernelEnd(const KernelInvocation *kernelInvocatio
     branch_count += sorted_branch_ops[unique_branch_addresses].second;
     unique_branch_addresses++;
   }
-  // cout << "Number of unique branches that cover 90\% of all branch instructions: " << unique_branch_addresses << endl;
-
-  // cout << endl
-  //      << "### Branch Entropy -- measure of the randomness of branch behaviour, representing branch predictability" << endl
-  //      << endl;
 
   //generate a history pattern
   //(arbitarily selected to a history of m=16 branches?)
@@ -840,83 +646,16 @@ void WorkloadCharacterisation::kernelEnd(const KernelInvocation *kernelInvocatio
   if (isnan(average_entropy)) {
     average_entropy = 0.0;
   }
-  // cout << "Using a branch history of " << m << endl
-  //      << endl;
 
   logfile << "branch_history, " << m << std::endl;
-
-  // cout << "Yokota Branch Entropy: " << yokota_entropy << endl
-  //      << endl;
-
   logfile << "yokota_entropy, " << yokota_entropy << std::endl;
-
-  // cout << "Yokota Branch Entropy per Workload: " << yokota_entropy_per_workload << endl
-  //      << endl;
-
   logfile << "yokota_entropy_per_workload, " << yokota_entropy_per_workload << std::endl;
-
-  // cout << "Average Linear Branch Entropy: " << average_entropy << endl
-  //      << endl;
-
   logfile << "average_entropy, " << average_entropy << std::endl;
 
-  // logfile << "metric,category,count\n";
-  // logfile << "Opcode,Compute," << major_operations << "\n";
-  // logfile << "Total Instruction Count,Compute," << total_instruction_count << "\n";
-  // logfile << "Freedom to Reorder,Compute," << freedom_to_reorder << "\n";
-  // logfile << "Resource Pressure,Compute," << resource_pressure << "\n";
-  // logfile << "Work-items,Parallelism," << m_threads_invoked << "\n";
-  // logfile << "Work-groups,Parallelism," << m_group_num[0] * m_group_num[1] * m_group_num[2] << "\n";
-  // logfile << "Work-items per Work-group,Parallelism," << m_local_num[0] * m_local_num[1] * m_local_num[2] << "\n";
-  // logfile << "SIMD Operand Sum,Parallelism," << simd_sum << "\n";
-  // logfile << "Total Barriers Hit,Parallelism," << m_barriers_hit << "\n";
-  // logfile << "Min ITB,Parallelism," << itb_min << "\n";
-  // logfile << "Max ITB,Parallelism," << itb_max << "\n";
-  // logfile << "Median ITB,Parallelism," << itb_median << "\n";
-  // logfile << "Min IPT,Parallelism," << ipt_min << "\n";
-  // logfile << "Max IPT,Parallelism," << ipt_max << "\n";
-  // logfile << "Median IPT,Parallelism," << ipt_median << "\n";
-  // logfile << "Max SIMD Width,Parallelism," << std::max_element(m_instructionWidth.begin(), m_instructionWidth.end(), [](const pair_type &a, const pair_type &b) { return a.first < b.first; })->first << "\n";
-  // logfile << "Mean SIMD Width,Parallelism," << simd_mean << "\n";
-  // logfile << "SD SIMD Width,Parallelism," << simd_stdev << "\n";
-  // logfile << "Granularity,Parallelism," << granularity << "\n";
-  // logfile << "Barriers Per Instruction,Parallelism," << barriers_per_instruction << "\n";
-  // logfile << "Instructions Per Operand,Parallelism," << instructions_per_operand << "\n";
-  // logfile << "Total Memory Footprint,Memory," << local_address_count[0].size() << "\n";
-  // logfile << "Unique Memory Accesses,Memory," << local_address_count[0].size() << "\n";
-  // logfile << "Unique Reads,Memory," << m_storeOps.size() << "\n";
-  // logfile << "Unique Writes,Memory," << m_loadOps.size()  << "\n";
-  // logfile << "Unique Read/Write Ratio,Memory,"
-  //      << setprecision(4) << (float) (((double)m_loadOps.size()) / ((double)m_storeOps.size()))  << "\n";
-  // logfile << "Total Reads,Memory," << load_count    << "\n";
-  // logfile << "Total Writes,Memory," << store_count    << "\n";
-  // logfile << "Rereads,Memory," << setprecision(4) << (float)((double)load_count / (double)m_loadOps.size()) << "\n";
-  // logfile << "Rewrites,Memory," << setprecision(4) << (float)((double)store_count / (double)m_storeOps.size()) << "\n";
-
-  // logfile << "90\% Memory Footprint,Memory," << unique_memory_addresses << "\n";
-  // logfile << "Global Memory Address Entropy,Memory," << mem_entropy << "\n";
-  // for (int nskip = 1; nskip < 11; nskip++) {
-  //   logfile << "LMAE -- Skipped " << nskip << " LSBs,Memory," << loc_entropy[nskip - 1] << "\n";
-  // }
-  // for (int nskip = 0; nskip < 11; nskip++) {
-  //   logfile << "Normed PSL -- Skipped " << nskip << " LSBs,Memory," << avg_psl[nskip] << "\n";
-  // }
-  // logfile << "Normed PSL Sum,Memory," << avg_psl_sum << "\n";
-  // logfile << "Total Global Memory Accessed,Memory," << m_global_memory_access << "\n";
-  // logfile << "Total Local Memory Accessed,Memory," << m_local_memory_access << "\n";
-  // logfile << "Total Constant Memory Accessed,Memory," << m_constant_memory_access << "\n";
-  // logfile << "Relative Local Memory Usage,Memory," << (((float)m_local_memory_access / (float)m_total_memory_access) * 100) << "\n";
-  // logfile << "Relative Constant Memory Usage,Memory," << (((float)m_constant_memory_access / (float)m_total_memory_access) * 100) << "\n";
-  // logfile << "Total Unique Branch Instructions,Control," << sorted_branch_ops.size() << "\n";
-  // logfile << "90\% Branch Instructions,Control," << unique_branch_addresses << "\n";
-  // logfile << "Yokota Branch Entropy,Memory," << yokota_entropy_per_workload << "\n";
-  // logfile << "Average Linear Branch Entropy,Memory," << average_entropy << "\n";
   logfile.close();
 
   cout << endl
        << "The Architecture-Independent Workload Characterisation was written to file: " << logfile_name << endl;
-  // Restore locale
-  cout.imbue(previousLocale);
 
   // Reset kernel counts, ready to start anew
   //m_memoryOps.clear();

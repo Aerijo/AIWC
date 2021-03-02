@@ -571,8 +571,8 @@ void WorkloadCharacterisation::kernelEnd(const KernelInvocation *kernelInvocatio
     double avg_psl_i = 0.0;
     for (size_t j = 0; j < m_psl_per_group.size(); j++){
       avg_psl_i += m_psl_per_group[j][i];
-    }
     avg_psl_i = (avg_psl_i / double(m_psl_per_group.size())) / std::log2(double(items_per_group + 1));
+    }
     avg_psl.push_back(avg_psl_i);
     avg_psl_sum += avg_psl_i;
     logfile << i << " " << avg_psl_i << ";";

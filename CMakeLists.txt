@@ -77,7 +77,7 @@ exec_program("${CLANG_ROOT}/bin/llvm-config --libfiles --system-libs"
 string(REGEX REPLACE "\n" " " LLVM_LIBS "${LLVM_LIBS}")
 separate_arguments(LLVM_LIBS)
 add_compile_definitions(LLVM_DISABLE_ABI_BREAKING_CHECKS_ENFORCING=1)
-message("llvm libs are now: ${LLVM_LIBS}")
+message(STATUS "llvm libs are now: ${LLVM_LIBS}")
 # Get LLVM libraries for linking
 #list(FIND LLVM_AVAILABLE_LIBS LLVM _LLVM_SHARED_INDEX)
 #if (${_LLVM_SHARED_INDEX} GREATER -1)

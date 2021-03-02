@@ -427,9 +427,6 @@ void WorkloadCharacterisation::kernelEnd(const KernelInvocation *kernelInvocatio
   resource_pressure = resource_pressure / m_threads_invoked;
   logfile << "resource_pressure, " << resource_pressure << std::endl;
   logfile << "work_items, " << m_threads_invoked << std::endl;
-
-  double granularity = 1.0 / static_cast<double>(m_threads_invoked);
-
   logfile << "total_barriers_hit, " << m_barriers_hit << std::endl;
 
   uint32_t itb_min = *std::min_element(m_instructionsToBarrier.begin(), m_instructionsToBarrier.end());
@@ -582,8 +579,6 @@ void WorkloadCharacterisation::kernelEnd(const KernelInvocation *kernelInvocatio
   logfile << "num_global_memory_access, " << m_global_memory_access << std::endl;
   logfile << "num_local_memory_access, " << m_local_memory_access << std::endl;
   logfile << "num_constant_memory_access, " << m_constant_memory_access << std::endl;
-
-  uint32_t m_total_memory_access = m_global_memory_access + m_local_memory_access + m_constant_memory_access;
 
   std::vector<std::pair<size_t, uint32_t>> sorted_branch_ops(m_branchCounts.size());
   std::partial_sort_copy(m_branchCounts.begin(), m_branchCounts.end(), sorted_branch_ops.begin(), sorted_branch_ops.end(), [](const std::pair<size_t, uint32_t> &left, const std::pair<size_t, uint32_t> &right) {

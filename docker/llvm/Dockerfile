@@ -7,9 +7,7 @@ ARG DOWNLOADS_DIR=/tmp
 
 ###########################################################
 FROM ubuntu:focal AS llvm-build
-
 LABEL maintainer="Benjamin Gray <benjamin.gray@anu.edu.au>"
-LABEL version="0.4"
 
 # Disable interactive apt install scripts
 ARG DEBIAN_FRONTEND=noninteractive
@@ -74,6 +72,8 @@ RUN make -j$(nproc) install
 
 ###########################################################
 FROM ubuntu:focal AS llvm-dist
+LABEL maintainer="Benjamin Gray <benjamin.gray@anu.edu.au>"
+
 ARG DEBIAN_FRONTEND=noninteractive
 
 ARG LLVM_INSTALL_DIR

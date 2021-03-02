@@ -4,8 +4,11 @@ ARG OCLGRIND_INSTALL_DIR=/oclgrind
 
 ARG OCLGRIND_DIR=/src/oclgrind
 
+
 ###########################################################
 FROM benjamin/llvm AS oclgrind-build
+LABEL maintainer="Benjamin Gray <benjamin.gray@anu.edu.au>"
+
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update -yq && apt-get install -yq \
@@ -38,6 +41,8 @@ RUN make -j$(nproc) install
 
 ###########################################################
 FROM benjamin/llvm AS oclgrind-dist
+LABEL maintainer="Benjamin Gray <benjamin.gray@anu.edu.au>"
+
 ARG DEBIAN_FRONTEND=noninteractive
 
 ARG OCLGRIND_INSTALL_DIR

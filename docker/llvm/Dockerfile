@@ -71,7 +71,7 @@ RUN make -j$(nproc) install
 
 
 ###########################################################
-FROM ubuntu:focal AS llvm-dist
+FROM nvidia/cuda:11.2.1-runtime-ubuntu20.04 AS llvm-dist
 LABEL maintainer="Benjamin Gray <benjamin.gray@anu.edu.au>"
 
 ARG DEBIAN_FRONTEND=noninteractive
